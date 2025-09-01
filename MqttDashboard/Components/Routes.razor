@@ -1,0 +1,10 @@
+﻿@using MqttDashboard.Components.Pages
+
+<Router AppAssembly="@typeof(Program).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
+    </Found>
+    <NotFound>
+        <p>Sorry, page not found</p>
+    </NotFound>
+</Router>

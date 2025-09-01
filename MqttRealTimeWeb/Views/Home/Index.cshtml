@@ -1,0 +1,52 @@
+﻿@{
+    ViewData["Title"] = "Realtime Dashboard";
+}
+
+<h2>Realtime Sensor Data</h2>
+
+<table id="sensorTable" class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Topic</th>
+            <th>Payload</th>
+            <th>Timestamp</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+<script>
+       const connection = new signalR.HubConnectionBuilder()
+        .withUrl("http://192.168.1.147:5000/sensorhub") // or https://192.168.1.147:7241
+        .withAutomaticReconnect()
+        .build();
+
+    connection.on("NewReading", function (reading) {
+        console.log("✔ Received from API", reading);
+
+        const row = `<tr>
+                <td>${reading.Id}</td>
+                <td>${reading.Topic}</td>
+                <td>${reading.Payload}</td>
+                <td>${reading.Timestamp}</td>
+            </tr>`;
+
+
+        const tbody = document.querySelector("#sensorTable tbody");
+        tbody.insertAdjacentHTML("afterbegin", row);
+
+        if (tbody.rows.length > 10) {
+            tbody.deleteRow(10);
+        }
+    });
+    connection.on("BroadcastStatus", function (message) {
+        console.log(message); 
+    });
+
+    connection.start()
+        .then(() => console.log("✅ Connected to API SignalR hub"))
+        .catch(err => console.error("❌ Connection failed", err));
+
+</script>

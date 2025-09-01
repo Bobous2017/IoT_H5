@@ -1,0 +1,79 @@
+﻿@page "/sensorReading"
+@using Microsoft.AspNetCore.SignalR.Client
+@using MqttDashboard.Models
+
+<h3>MQTT Sensor Readings (Simulator)</h3>
+
+@if (readings.Count == 0)
+{
+    <p><em>Waiting for simulated sensor data...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Topic</th>
+                <th>Payload</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var reading in readings)
+            {
+                <tr>
+                    <td>@reading.Id</td>
+                    <td>@reading.Topic</td>
+                    <td>@reading.Payload</td>
+                    <td>@reading.Timestamp</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Debugging -->
+    <pre>@System.Text.Json.JsonSerializer.Serialize(readings)</pre>
+}
+
+@code {
+    private readonly List<SensorReading> readings = new();
+    private HubConnection? hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            // 👇 Hub still exists in your API project (because SensorSimulator pushes into SensorHub)
+            .WithUrl("http://localhost:5000/sensorhub")
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<SensorReading>("NewReading", (newReading) =>
+        {
+            Console.WriteLine($"✔ Received simulated data ID={newReading.Id}, Payload={newReading.Payload}");
+
+            readings.Insert(0, newReading);
+            if (readings.Count > 10)
+                readings.RemoveAt(readings.Count - 1);
+
+            InvokeAsync(StateHasChanged);
+        });
+
+        try
+        {
+            await hubConnection.StartAsync();
+            Console.WriteLine("✅ Connected to SignalR hub (Simulator)");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Failed to connect: {ex.Message}");
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+            await hubConnection.DisposeAsync();
+    }
+
+}

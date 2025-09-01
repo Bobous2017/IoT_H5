@@ -1,0 +1,96 @@
+﻿@page "/dashboard"
+@using Microsoft.AspNetCore.SignalR.Client
+
+<h3>MQTT Sensor Readings</h3>
+
+@if (readings.Count == 0)
+{
+    <p><em>Waiting for sensor data...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Topic</th>
+                <th>Payload</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var reading in readings)
+            {
+                <tr>
+                    <td>@reading.Id</td>
+                    <td>@reading.Topic</td>
+                    <td>@reading.Payload</td>
+                    <td>@reading.Timestamp</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Debug: show raw JSON -->
+    <pre>@System.Text.Json.JsonSerializer.Serialize(readings)</pre>
+}
+
+@code {
+    private readonly List<SensorReading> readings = new();
+    private HubConnection? hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("http://192.168.1.147:5000/sensorhub")
+            .WithAutomaticReconnect()
+            .Build();
+
+        // Listen for messages
+        hubConnection.On<SensorReading>("NewReading", async (newReading) =>
+        {
+            Console.WriteLine("✔ SignalR message received!");
+
+            if (newReading is null)
+            {
+                Console.WriteLine("❌ newReading is null!");
+                return;
+            }
+
+            Console.WriteLine($"📡 ID: {newReading.Id}, Payload: {newReading.Payload}");
+
+            readings.Insert(0, newReading);
+            if (readings.Count > 10)
+                readings.RemoveAt(readings.Count - 1);
+
+            await InvokeAsync(StateHasChanged);
+        });
+
+        try
+        {
+            await hubConnection.StartAsync();
+            Console.WriteLine("✅ Connected to SignalR hub");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ SignalR connection failed: {ex.Message}");
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+
+    // Must match PascalCase JSON from API
+    public class SensorReading
+    {
+        public int Id { get; set; }
+        public string Topic { get; set; } = string.Empty;
+        public string Payload { get; set; } = string.Empty;
+        public string Timestamp { get; set; } = string.Empty;
+    }
+}

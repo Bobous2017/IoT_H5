@@ -1,0 +1,29 @@
+﻿@page "/counter-realtime"
+@inject MqttDashboard.Serevices.CounterService CounterService
+@implements IDisposable
+@rendermode InteractiveServer
+
+<h3>Realtime Counter</h3>
+<p>Current count: <strong>@counter</strong></p>
+
+
+
+@code {
+    private int counter = 0;
+
+    protected override void OnInitialized()
+    {
+        CounterService.Subscribe(HandleCounterChanged);
+    }
+
+    private void HandleCounterChanged(int newValue)
+    {
+        counter = newValue;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        CounterService.Unsubscribe(HandleCounterChanged);
+    }
+}
