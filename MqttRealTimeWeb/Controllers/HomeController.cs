@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MqttRealTimeWeb.Models;
+using MySql.Data.MySqlClient;
 using System.Diagnostics;
 
 namespace MqttApiPro.Controllers
@@ -18,7 +19,7 @@ namespace MqttApiPro.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        public IActionResult Settings()
         {
             return View();
         }
@@ -28,5 +29,7 @@ namespace MqttApiPro.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+
     }
 }

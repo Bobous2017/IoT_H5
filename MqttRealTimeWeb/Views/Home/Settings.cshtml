@@ -1,0 +1,90 @@
+﻿@{
+    ViewData["Title"] = "Indstillinger";
+}
+
+
+<div class="text-center">
+    <h1>@ViewData["Title"]</h1>
+    <form method="post" class="border border-dark rounded-3 my-5 w-50 mx-auto">
+        <div class="my-4">
+            <label for="deviceID" class="w-25 text-end mr-2">Enheds ID</label>
+            <input name="deviceID" placeholder="515351333120484E411F" type="text" id="deviceID" class="rounded" />
+            <select id="deviceID" name="deviceID" type="text">
+                @* foreach already added unique IDS *@
+                <option>515351333120484E411F</option>
+            </select>
+        </div>
+        <div >
+            <label for="minTemp" class="w-25 text-end mr-2">Min. temperatur</label>
+            <input name="minTemp" placeholder="23" type="text" id="minTemp" class="rounded"/>
+        </div>
+        <div class="my-4">
+            <label for="maxTemp" class="w-25 text-end mr-2">Max temperatur</label>
+            <input name="maxTemp" placeholder="26" type="text" id="maxTemp" class="rounded"/>
+        </div>
+        <div>
+            <label for="startHour" class="w-25 text-end mr-2">Start tid på arbejdsdag</label>
+            <input name="startHour" placeholder="08:00" type="text" id="startHour" class="rounded" />
+        </div>
+        <div class="my-4">
+            <label for="endHour" class="w-25 text-end mr-2">Slut tid på arbejdsdag</label>
+            <input name="endHour" placeholder="16:00" type="text" id="endHour" class="rounded" />
+        </div>
+        <button type="submit" class="mb-5 rounded">Opdater indstillinger</button>
+    </form>
+
+    <div>
+        <h3 class="text-decoration-underline">Gemte indstillinger</h3>
+        <table id="settingsTable" class="table table-striped w-100 ">
+            <thead>
+                <tr>
+                    <th>Enheds ID</th>
+                    <th>Min. temp</th>
+                    <th>Max temp</th>
+                    <th>Start tid</th>
+                    <th>Slut tid</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+            @* foreach item in settings *@
+        </table>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+<script>
+       const connection = new signalR.HubConnectionBuilder()
+        .withUrl("http://192.168.1.147:5000/sensorhub") // or https://192.168.1.147:7241
+        .withAutomaticReconnect()
+        .build();
+
+    connection.on("NewReading", function (reading) {
+        console.log("✔ Received from API", reading);
+
+        const row = `<tr>
+                <td>${reading.deviceID}</td>
+                <td>${reading.startHour}</td>
+                <td>${reading.endHour}</td>
+                <td>${reading.minTemp}</td>
+                <td>${reading.maxTemp}</td>
+            </tr>`;
+
+
+        const tbody = document.querySelector("#settingsTable tbody");
+        tbody.insertAdjacentHTML("afterbegin", row);
+
+        if (tbody.rows.length > 10) {
+            tbody.deleteRow(10);
+        }
+    });
+    connection.on("BroadcastStatus", function (message) {
+        console.log(message);
+    });
+
+    connection.start()
+        .then(() => console.log("✅ Connected to API SignalR hub"))
+        .catch(err => console.error("❌ Connection failed", err));
+
+</script>

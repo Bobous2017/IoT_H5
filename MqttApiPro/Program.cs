@@ -40,7 +40,8 @@ builder.WebHost.ConfigureKestrel(options =>
 
 //builder.Services.AddHostedService<SensorSimulator>();
 builder.Services.AddHostedService<MqttSubscriberService>();
-builder.Services.AddHostedService<SensorReadingsMQTT>();
+//builder.Services.AddHostedService<SensorReadingsMQTT>();
+builder.Services.AddHostedService<SettingsDb>();
 
 
 
