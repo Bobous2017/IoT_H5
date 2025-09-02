@@ -43,7 +43,7 @@ namespace MqttApiPro.Services
                         };
 
                         _logger.LogInformation($"📢 Broadcasting reading ID {reading.Id}");
-                        await _hubContext.Clients.All.SendAsync("NewSetting", reading, cancellationToken: stoppingToken);
+                        //await _hubContext.Clients.All.SendAsync("NewSetting", reading, cancellationToken: stoppingToken);
 
                         // TODO: push to SignalR
                     }
