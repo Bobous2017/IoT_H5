@@ -9,10 +9,12 @@
     <form method="post" class="border border-dark rounded-3 my-5 w-50 mx-auto">
         <div class="my-4">
             <label for="deviceID" class="w-25 text-end mr-2">Enheds ID</label>
-            <input name="deviceID" placeholder="515351333120484E411F" type="text" id="deviceID" class="rounded" />
+            <input name="deviceID" placeholder="Device ikke i db" type="text" id="deviceID" class="rounded" />
             <select id="deviceID" name="deviceID" type="text">
-                @* foreach already added unique IDS *@
-                <option>515351333120484E411F</option>
+                @foreach (var setting in Model)
+                {
+                    <option>@setting.DeviceID</option>
+                }
             </select>
         </div>
         <div>
@@ -31,6 +33,10 @@
             <label for="endHour" class="w-25 text-end mr-2">Slut tid på arbejdsdag</label>
             <input name="endHour" placeholder="16:00" type="text" id="endHour" class="rounded" />
         </div>
+        <div class="mb-4">
+            <label for="msgInterval" class="w-30 text-end mr-2">Interval på målte værdier</label>
+            <input name="msgInterval" placeholder="Tid i sekunder" type="text" id="msgInterval" class="rounded" />
+        </div>
         <button type="submit" class="mb-5 rounded">Opdater indstillinger</button>
     </form>
 
@@ -39,31 +45,29 @@
         <table id="settingsTable" class="table table-striped w-100 ">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Device ID</th>
                     <th>Start Hour</th>
                     <th>End Hour</th>
                     <th>Min Temp</th>
                     <th>Max Temp</th>
+                    <th>Msg Interval</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var setting in Model)
                 {
                     <tr>
-                        <td>@setting.Id</td>
                         <td>@setting.DeviceID</td>
                         <td>@setting.StartHour</td>
                         <td>@setting.EndHour</td>
                         <td>@setting.MinTemp</td>
                         <td>@setting.MaxTemp</td>
+                        <td>@setting.msgInterval</td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
 </div>
-<h2>Settings Data</h2>
-
 
 <button onclick="location.reload()" class="btn btn-primary">🔄 Refresh</button>

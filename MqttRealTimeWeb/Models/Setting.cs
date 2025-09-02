@@ -8,5 +8,6 @@
         public string EndHour { get; set; }
         public string MinTemp { get; set; }
         public string MaxTemp { get; set; }
+        public int msgInterval { get; set; }
     }
 }

@@ -9,8 +9,7 @@ namespace MqttApiPro.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly string _connStr =
-              "Server=192.168.1.137;Database=iotdata;User ID=iotuser;Password=iotpass;";
+        private readonly string _connStr = "Server=192.168.1.137;Database=iotdata;User ID=iotuser;Password=iotpass;";
 
         public HomeController(ILogger<HomeController> logger)
         {
@@ -36,20 +35,18 @@ namespace MqttApiPro.Controllers
                 {
                     settingsList.Add(new Setting
                     {
-                        Id = (int)reader["id"],
                         DeviceID = reader["deviceID"].ToString(),
                         StartHour = reader["startHour"].ToString(),
                         EndHour = reader["endHour"].ToString(),
                         MinTemp = reader["minTemp"].ToString(),
-                        MaxTemp = reader["maxTemp"].ToString()
+                        MaxTemp = reader["maxTemp"].ToString(),
+                        msgInterval = (int)reader["msgInterval"]
                     });
                 }
             }
 
             return View(settingsList); // ✅ pass to Settings.cshtml
         }
-
-        public IActionResult Privacy() => View();
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
