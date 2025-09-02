@@ -17,6 +17,11 @@ namespace MqttApiPro.Controllers
         {
             return View();
         }
+        public IActionResult Settings()
+        {
+            return View();
+        }
+
 
         public IActionResult Privacy()
         {

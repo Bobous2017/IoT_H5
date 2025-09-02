@@ -28,8 +28,6 @@ namespace MqttApiPro.Services
                     await conn.OpenAsync(stoppingToken);
 
                     var cmd = new MySqlCommand("SELECT * FROM sensor_readings ORDER BY id DESC LIMIT 1", conn);
-                  
-
                     var reader = await cmd.ExecuteReaderAsync(stoppingToken);
 
                     if (await reader.ReadAsync(stoppingToken))
@@ -43,18 +41,29 @@ namespace MqttApiPro.Services
                         };
 
                         _logger.LogInformation($"📢 Broadcasting reading ID {reading.Id}");
-
-                        // Push to all SignalR clients
                         await _hubContext.Clients.All.SendAsync("NewReading", reading, cancellationToken: stoppingToken);
                     }
+                }
+                catch (TaskCanceledException)
+                {
+                    // normal during shutdown → exit loop
+                    break;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error reading from DB or pushing to SignalR");
                 }
 
-                await Task.Delay(8000, stoppingToken); // Poll every 3 seconds
+                try
+                {
+                    await Task.Delay(3000, stoppingToken); // Poll every 3s
+                }
+                catch (TaskCanceledException)
+                {
+                    break; // shutdown
+                }
             }
         }
+
     }
 }

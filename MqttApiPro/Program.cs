@@ -41,7 +41,7 @@ builder.WebHost.ConfigureKestrel(options =>
 //builder.Services.AddHostedService<SensorSimulator>();
 builder.Services.AddHostedService<MqttSubscriberService>();
 builder.Services.AddHostedService<SensorReadingsMQTT>();
-
+builder.Services.AddHostedService<SettingsDB>();
 
 
 //builder.Services.AddHostedService<CounterBroadcaster>();
@@ -70,10 +70,14 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllers();
     endpoints.MapHub<SensorHub>("/sensorhub")
              .RequireCors("AllowMvcClient"); // 👈 enforce policy also here
+    endpoints.MapHub<SettingsHub>("/settingshub")
+         .RequireCors("AllowMvcClient");
+
 });
 //app.MapControllers();
 
 ////  Map SignalR hub
 //app.MapHub<SensorHub>("/sensorhub");
+//app.MapHub<SensorHub>("/sensorhub").RequireCors("AllowMvcClient");
 
 app.Run();

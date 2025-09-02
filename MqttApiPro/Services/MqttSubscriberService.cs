@@ -26,6 +26,7 @@ namespace MqttApiPro.Services
             var options = new MqttClientOptionsBuilder()
                 .WithTcpServer("192.168.1.137", 1883)
                 .WithClientId("ApiSubscriber")
+                .WithCredentials("ditte", "ditte2017")
                 .Build();
 
             _mqttClient.ApplicationMessageReceivedAsync += async e =>
