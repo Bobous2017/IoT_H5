@@ -4,32 +4,66 @@
     ViewData["Title"] = "Settings Dashboard";
 }
 
+<div class="text-center">
+    <h1>@ViewData["Title"]</h1>
+    <form method="post" class="border border-dark rounded-3 my-5 w-50 mx-auto">
+        <div class="my-4">
+            <label for="deviceID" class="w-25 text-end mr-2">Enheds ID</label>
+            <input name="deviceID" placeholder="515351333120484E411F" type="text" id="deviceID" class="rounded" />
+            <select id="deviceID" name="deviceID" type="text">
+                @* foreach already added unique IDS *@
+                <option>515351333120484E411F</option>
+            </select>
+        </div>
+        <div>
+            <label for="minTemp" class="w-25 text-end mr-2">Min. temperatur</label>
+            <input name="minTemp" placeholder="23" type="text" id="minTemp" class="rounded" />
+        </div>
+        <div class="my-4">
+            <label for="maxTemp" class="w-25 text-end mr-2">Max temperatur</label>
+            <input name="maxTemp" placeholder="26" type="text" id="maxTemp" class="rounded" />
+        </div>
+        <div>
+            <label for="startHour" class="w-25 text-end mr-2">Start tid på arbejdsdag</label>
+            <input name="startHour" placeholder="08:00" type="text" id="startHour" class="rounded" />
+        </div>
+        <div class="my-4">
+            <label for="endHour" class="w-25 text-end mr-2">Slut tid på arbejdsdag</label>
+            <input name="endHour" placeholder="16:00" type="text" id="endHour" class="rounded" />
+        </div>
+        <button type="submit" class="mb-5 rounded">Opdater indstillinger</button>
+    </form>
+
+    <div>
+        <h3 class="text-decoration-underline">Gemte indstillinger</h3>
+        <table id="settingsTable" class="table table-striped w-100 ">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Device ID</th>
+                    <th>Start Hour</th>
+                    <th>End Hour</th>
+                    <th>Min Temp</th>
+                    <th>Max Temp</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var setting in Model)
+                {
+                    <tr>
+                        <td>@setting.Id</td>
+                        <td>@setting.DeviceID</td>
+                        <td>@setting.StartHour</td>
+                        <td>@setting.EndHour</td>
+                        <td>@setting.MinTemp</td>
+                        <td>@setting.MaxTemp</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
 <h2>Settings Data</h2>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Device ID</th>
-            <th>Start Hour</th>
-            <th>End Hour</th>
-            <th>Min Temp</th>
-            <th>Max Temp</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var setting in Model)
-        {
-            <tr>
-                <td>@setting.Id</td>
-                <td>@setting.DeviceID</td>
-                <td>@setting.StartHour</td>
-                <td>@setting.EndHour</td>
-                <td>@setting.MinTemp</td>
-                <td>@setting.MaxTemp</td>
-            </tr>
-        }
-    </tbody>
-</table>
 
 <button onclick="location.reload()" class="btn btn-primary">🔄 Refresh</button>

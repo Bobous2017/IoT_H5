@@ -74,7 +74,7 @@ app.UseEndpoints(endpoints =>
          .RequireCors("AllowMvcClient");
 
 });
-//app.MapControllers();
+app.MapControllers();
 
 ////  Map SignalR hub
 //app.MapHub<SensorHub>("/sensorhub");
