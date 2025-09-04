@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MqttRealTimeWeb.Models;  // ✅ import model namespace
+using MqttRealTimeWeb.Models;
 using MySql.Data.MySqlClient;
 using System.Diagnostics;
-using System.Collections.Generic;
 
 namespace MqttApiPro.Controllers
 {
@@ -21,6 +20,9 @@ namespace MqttApiPro.Controllers
             return View();
         }
 
+        //------------------------------------ CRUD Håndter Settings --------------------------------------
+        // ✅ READ: Show Settings
+        [HttpGet]
         public IActionResult Settings()
         {
             var settingsList = new List<Setting>();
@@ -33,6 +35,7 @@ namespace MqttApiPro.Controllers
 
                 while (reader.Read())
                 {
+
                     settingsList.Add(new Setting
                     {
                         DeviceID = reader["deviceID"].ToString(),
@@ -45,7 +48,78 @@ namespace MqttApiPro.Controllers
                 }
             }
 
-            return View(settingsList); // ✅ pass to Settings.cshtml
+            return View(settingsList); // → settings.cshtml
+        }
+
+        // ✅ CREATE or UPDATE Settings
+        [HttpPost]
+        public IActionResult Settings(Setting setting)
+        {
+            using (var conn = new MySqlConnection(_connStr))
+            {
+                conn.Open();
+
+                // check if deviceID exists
+                var checkCmd = new MySqlCommand("SELECT COUNT(*) FROM settings WHERE deviceID = @deviceID", conn);
+                checkCmd.Parameters.AddWithValue("@deviceID", setting.DeviceID);
+
+                var exists = Convert.ToInt32(checkCmd.ExecuteScalar()) > 0;
+
+                if (exists)
+                {
+                    // UPDATE
+                    var updateCmd = new MySqlCommand(@"UPDATE settings SET 
+                        startHour = @startHour, 
+                        endHour = @endHour, 
+                        minTemp = @minTemp, 
+                        maxTemp = @maxTemp,
+                        msgInterval = @msgInterval
+                        WHERE deviceID = @deviceID", conn);
+
+                    updateCmd.Parameters.AddWithValue("@startHour", setting.StartHour);
+                    updateCmd.Parameters.AddWithValue("@endHour", setting.EndHour);
+                    updateCmd.Parameters.AddWithValue("@minTemp", setting.MinTemp);
+                    updateCmd.Parameters.AddWithValue("@maxTemp", setting.MaxTemp);
+                    updateCmd.Parameters.AddWithValue("@msgInterval", setting.msgInterval);
+                    updateCmd.Parameters.AddWithValue("@deviceID", setting.DeviceID);
+
+                    updateCmd.ExecuteNonQuery();
+                }
+                else
+                {
+                    // INSERT
+                    var insertCmd = new MySqlCommand(@"INSERT INTO settings 
+                        (deviceID, startHour, endHour, minTemp, maxTemp, msgInterval)
+                        VALUES (@deviceID, @startHour, @endHour, @minTemp, @maxTemp, @msgInterval)", conn);
+
+                    insertCmd.Parameters.AddWithValue("@deviceID", setting.DeviceID);
+                    insertCmd.Parameters.AddWithValue("@startHour", setting.StartHour);
+                    insertCmd.Parameters.AddWithValue("@endHour", setting.EndHour);
+                    insertCmd.Parameters.AddWithValue("@minTemp", setting.MinTemp);
+                    insertCmd.Parameters.AddWithValue("@maxTemp", setting.MaxTemp);
+                    insertCmd.Parameters.AddWithValue("@msgInterval", setting.msgInterval);
+
+                    insertCmd.ExecuteNonQuery();
+                }
+            }
+
+            return RedirectToAction("Settings");
+        }
+
+        // ✅ DELETE Setting by DeviceID
+        [HttpPost]
+        public IActionResult DeleteSetting(string deviceID)
+        {
+            using (var conn = new MySqlConnection(_connStr))
+            {
+                conn.Open();
+
+                var cmd = new MySqlCommand("DELETE FROM settings WHERE deviceID = @deviceID", conn);
+                cmd.Parameters.AddWithValue("@deviceID", deviceID);
+                cmd.ExecuteNonQuery();
+            }
+
+            return RedirectToAction("Settings");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

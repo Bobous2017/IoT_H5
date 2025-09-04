@@ -1,4 +1,4 @@
-﻿@model IEnumerable<MqttRealTimeWeb.Models.Setting>  
+﻿@* @model IEnumerable<MqttRealTimeWeb.Models.Setting>  
 
 @{
     ViewData["Title"] = "Settings Dashboard";
@@ -63,6 +63,83 @@
                         <td>@setting.MinTemp</td>
                         <td>@setting.MaxTemp</td>
                         <td>@setting.msgInterval</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<button onclick="location.reload()" class="btn btn-primary">🔄 Refresh</button> *@
+@model IEnumerable<MqttRealTimeWeb.Models.Setting>
+
+@{
+    ViewData["Title"] = "Settings Dashboard";
+}
+
+<div class="text-center">
+    <h1>@ViewData["Title"]</h1>
+
+    <!-- ✔️ CREATE / UPDATE form -->
+    <form asp-action="Settings" method="post" class="border border-dark rounded-3 my-5 w-50 mx-auto">
+        <div class="my-4">
+            <label for="deviceID" class="w-25 text-end mr-2">Enheds ID</label>
+            <input name="DeviceID" placeholder="Device ID" type="text" id="deviceID" class="rounded" required />
+        </div>
+        <div>
+            <label for="minTemp" class="w-25 text-end mr-2">Min. temperatur</label>
+            <input name="MinTemp" placeholder="23" type="number" id="minTemp" class="rounded" required />
+        </div>
+        <div class="my-4">
+            <label for="maxTemp" class="w-25 text-end mr-2">Max temperatur</label>
+            <input name="MaxTemp" placeholder="26" type="number" id="maxTemp" class="rounded" required />
+        </div>
+        <div>
+            <label for="startHour" class="w-25 text-end mr-2">Start tid på arbejdsdag</label>
+            <input name="StartHour" placeholder="08:00" type="text" id="startHour" class="rounded" required />
+        </div>
+        <div class="my-4">
+            <label for="endHour" class="w-25 text-end mr-2">Slut tid på arbejdsdag</label>
+            <input name="EndHour" placeholder="16:00" type="text" id="endHour" class="rounded" required />
+        </div>
+        <div class="mb-4">
+            <label for="msgInterval" class="w-30 text-end mr-2">Interval på målte værdier</label>
+            <input name="msgInterval" placeholder="8000" type="number" id="msgInterval" class="rounded" required />
+        </div>
+        <button type="submit" class="btn btn-success mb-5 rounded">💾 Opdater / Opret</button>
+    </form>
+
+    <!-- ✔️ READ + DELETE -->
+    <div>
+        <h3 class="text-decoration-underline">Gemte indstillinger</h3>
+        <table id="settingsTable" class="table table-striped w-100">
+            <thead>
+                <tr>
+                    <th>Device ID</th>
+                    <th>Start Hour</th>
+                    <th>End Hour</th>
+                    <th>Min Temp</th>
+                    <th>Max Temp</th>
+                    <th>Msg Interval</th>
+                    <th>🗑️</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var setting in Model)
+                {
+                    <tr>
+                        <td>@setting.DeviceID</td>
+                        <td>@setting.StartHour</td>
+                        <td>@setting.EndHour</td>
+                        <td>@setting.MinTemp</td>
+                        <td>@setting.MaxTemp</td>
+                        <td>@setting.msgInterval</td>
+                        <td>
+                            <form asp-action="DeleteSetting" method="post" onsubmit="return confirm('Er du sikker på du vil slette dette?');">
+                                <input type="hidden" name="deviceID" value="@setting.DeviceID" />
+                                <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
+                            </form>
+                        </td>
                     </tr>
                 }
             </tbody>

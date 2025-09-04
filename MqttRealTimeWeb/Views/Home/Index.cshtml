@@ -17,6 +17,8 @@
 </table>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+@* <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> *@
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
 <script>
        const connection = new signalR.HubConnectionBuilder()
         .withUrl("http://192.168.1.147:5000/sensorhub") // or https://192.168.1.147:7241
@@ -37,8 +39,8 @@
         const tbody = document.querySelector("#sensorTable tbody");
         tbody.insertAdjacentHTML("afterbegin", row);
 
-        if (tbody.rows.length > 10) {
-            tbody.deleteRow(10);
+        if (tbody.rows.length > 5) {
+            tbody.deleteRow(5);
         }
     });
     connection.on("BroadcastStatus", function (message) {
@@ -46,7 +48,139 @@
     });
 
     connection.start()
-        .then(() => console.log("✅ Connected to API SignalR hub"))
-        .catch(err => console.error("❌ Connection failed", err));
+        .then(() => console.log("Connected to API SignalR hub"))
+        .catch(err => console.error("Connection failed", err));
 
 </script>
+<canvas id="sensorChart" width="200" height="100"></canvas>
+<script>
+    const ctx = document.getElementById('sensorChart').getContext('2d');
+    const sensorChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [], // timestamps
+            datasets: [{
+                label: 'Sensor Payload',
+                data: [], // payloads
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            scales: {
+                x: { title: { display: true, text: 'Timestamp' } },
+                y: { title: { display: true, text: 'Payload' } }
+            }
+        }
+    });
+
+          connection.on("NewReading", function (reading) {
+        console.log("✔ Received from API", reading);
+
+        // Extract numeric value from payload
+        let value = parseFloat(reading.Payload.match(/\d+\.\d+/)?.[0]);
+        if (isNaN(value)) {
+            console.warn("❌ Could not extract numeric value from payload:", reading.Payload);
+            return;
+        }
+
+        // Format timestamp (remove "T07:")
+        let formattedTime = reading.Timestamp.replace("T07:", " ");
+
+        // Update table
+        const row = `<tr>
+            <td>${reading.Id}</td>
+            <td>${reading.Topic}</td>
+            <td>${reading.Payload}</td>
+            <td>${formattedTime}</td>
+        </tr>`;
+        const tbody = document.querySelector("#sensorTable tbody");
+        tbody.insertAdjacentHTML("afterbegin", row);
+        if (tbody.rows.length > 5) tbody.deleteRow(5);
+
+        // Update chart
+        sensorChart.data.labels.push(formattedTime);
+        sensorChart.data.datasets[0].data.push(value);
+        if (sensorChart.data.labels.length > 20) {
+            sensorChart.data.labels.shift();
+            sensorChart.data.datasets[0].data.shift();
+        }
+        sensorChart.update();
+    });
+</script>
+<canvas id="sensorChartStat" width="200" height="100"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
+
+<script>
+    const ctxStat = document.getElementById('sensorChartStat').getContext('2d');
+    const sensorChartStat = new Chart(ctxStat, {
+        type: 'bar', 
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Temperature (°C)',
+                data: [],
+                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    title: { display: true, text: 'Timestamp' },
+                    ticks: {
+                        maxRotation: 90,
+                        minRotation: 45
+                    }
+                },
+                  y: {
+                    title: { display: true, text: 'Temperature (°C)' },
+                    beginAtZero: false, // <- allow auto-scaling
+                    ticks: {
+                        // optionally control decimals
+                        callback: function(value) {
+                            return value.toFixed(2) + '°C';
+                        }
+                    }
+                }
+
+            }
+        }
+    });
+
+    connection.on("NewReading", function (reading) {
+        console.log("✔ Received from API", reading);
+
+        let value = parseFloat(reading.Payload.match(/\d+\.\d+/)?.[0]);
+        if (isNaN(value)) {
+            console.warn("❌ Could not extract numeric value from payload:", reading.Payload);
+            return;
+        }
+
+        let formattedTime = reading.Timestamp.replace("T07:", " ");
+
+        const row = `<tr>
+            <td>${reading.Id}</td>
+            <td>${reading.Topic}</td>
+            <td>${reading.Payload}</td>
+            <td>${formattedTime}</td>
+        </tr>`;
+        const tbody = document.querySelector("#sensorTable tbody");
+        tbody.insertAdjacentHTML("afterbegin", row);
+        if (tbody.rows.length > 5) tbody.deleteRow(5);
+
+        sensorChartStat.data.labels.push(formattedTime);
+        sensorChartStat.data.datasets[0].data.push(value);
+        if (sensorChartStat.data.labels.length > 20) {
+            sensorChartStat.data.labels.shift();
+            sensorChartStat.data.datasets[0].data.shift();
+        }
+        sensorChartStat.update();
+    });
+</script>
+
+

@@ -40,14 +40,14 @@ namespace MqttApiPro.Services
                             Timestamp = reader["timestamp"]
                         };
 
-                        _logger.LogInformation($"📢 Broadcasting reading ID {reading.Id}");
+                        _logger.LogInformation($"Broadcasting reading ID {reading.Id}");
                         await _hubContext.Clients.All.SendAsync("NewReading", reading, cancellationToken: stoppingToken);
                     }
                 }
                 catch (TaskCanceledException)
                 {
-                    // normal during shutdown → exit loop
-                    break;
+                    
+                    break; // normal during shutdown → exit loop
                 }
                 catch (Exception ex)
                 {

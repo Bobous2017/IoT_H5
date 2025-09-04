@@ -11,7 +11,7 @@ builder.Services.AddSignalR()
         options.PayloadSerializerOptions.PropertyNamingPolicy = null; // keep PascalCase
     });
 
-// ✅ CORS – allow MVC frontend both on localhost + LAN IP
+//  CORS – allow MVC frontend both on localhost + LAN IP
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowMvcClient", policy =>
@@ -39,12 +39,13 @@ builder.WebHost.ConfigureKestrel(options =>
 });
 
 //builder.Services.AddHostedService<SensorSimulator>();
+//builder.Services.AddHostedService<CounterBroadcaster>();
 builder.Services.AddHostedService<MqttSubscriberService>();
 builder.Services.AddHostedService<SensorReadingsMQTT>();
 builder.Services.AddHostedService<SettingsDB>();
 
 
-//builder.Services.AddHostedService<CounterBroadcaster>();
+
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
@@ -65,11 +66,12 @@ app.UseRouting();
 app.UseCors("AllowMvcClient");
 
 app.UseAuthorization();
+// Enforce policy on SignalR hubs 
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllers();
     endpoints.MapHub<SensorHub>("/sensorhub")
-             .RequireCors("AllowMvcClient"); // 👈 enforce policy also here
+             .RequireCors("AllowMvcClient"); 
     endpoints.MapHub<SettingsHub>("/settingshub")
          .RequireCors("AllowMvcClient");
 

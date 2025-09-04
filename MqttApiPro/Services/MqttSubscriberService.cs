@@ -27,6 +27,7 @@ namespace MqttApiPro.Services
                 .WithTcpServer("192.168.1.137", 1883)
                 .WithClientId("ApiSubscriber")
                 .WithCredentials("ditte", "ditte2017")
+                .WithCleanSession()
                 .Build();
 
             _mqttClient.ApplicationMessageReceivedAsync += async e =>
@@ -36,7 +37,7 @@ namespace MqttApiPro.Services
                     var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
                     var topic = e.ApplicationMessage.Topic;
 
-                    _logger.LogInformation("📩 MQTT Received: Topic={Topic}, Payload={Payload}", topic, payload);
+                    _logger.LogInformation("MQTT Received: Topic={Topic}, Payload={Payload}", topic, payload);
 
                     using var conn = new MySqlConnection(_connStr);
                     await conn.OpenAsync(stoppingToken);
@@ -52,25 +53,25 @@ namespace MqttApiPro.Services
                     var rows = await cmd.ExecuteNonQueryAsync(stoppingToken);
 
                     if (rows > 0)
-                        _logger.LogInformation("✅ Insert succeeded → {Rows} row(s) added. Topic={Topic}, Payload={Payload}", rows, topic, payload);
+                        _logger.LogInformation("Insert succeeded → {Rows} row(s) added. Topic={Topic}, Payload={Payload}", rows, topic, payload);
                     else
-                        _logger.LogWarning("⚠️ Insert executed but no rows were added! Topic={Topic}, Payload={Payload}", topic, payload);
+                        _logger.LogWarning("Insert executed but no rows were added! Topic={Topic}, Payload={Payload}", topic, payload);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "❌ Error inserting MQTT message into DB");
+                    _logger.LogError(ex, "Error inserting MQTT message into DB");
                 }
             };
 
             await _mqttClient.ConnectAsync(options, stoppingToken);
 
             await _mqttClient.SubscribeAsync(new MqttClientSubscribeOptionsBuilder()
-            .WithTopicFilter("Topic:OpsætningMQTT")   // <-- match the Pi publishes
-            //.WithTopicFilter("#")   // subscribe to all topics
+            .WithTopicFilter("Topic:OpsætningMQTT")   // <-- matcher  Pi publishes
+            //.WithTopicFilter("#")   // subscribe til alle topics
             .Build(), stoppingToken);
 
 
-            _logger.LogInformation("✅ Subscribed to MQTT topic: sensors/#");
+            _logger.LogInformation("Subscribed to MQTT topic: sensors/#");
 
             while (!stoppingToken.IsCancellationRequested)
             {
